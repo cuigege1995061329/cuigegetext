@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+    *{
+        margin: 0;
+        padding: 0;
+
+    }
+    html,body{
+        width:100%;
+        height:100%;
+    }
+    ul{overflow: hidden}
+    li{
+        list-style: none;
+        float: left;
+        padding: 5px 10px;
+        text-align: center;
+        width: 40px;
+    }
+    a{
+        text-decoration: none; 
+        cursor: pointer  
+    }
+    #mengban{
+        width: 100%;
+        height:100%;
+        background: rgba(0,0, 0, 0.2);
+        position: absolute;
+        display: none;
+    }
+    #delect{
+        width: 300px;
+        height: 100px;
+        background: sandybrown;
+        position: absolute;
+        top:50%;
+        left: 50%;
+        margin: -50px 0 0 -150px;
+        display: none
+    }
+    </style>   
+</head>
+
+<body>
+        <div id="mengban"></div>
+        
+    <div id="delect">
+        <a id="confirm">删除</a>
+        <a id="cancel">取消</a>
+    </div>
+    <div id="box">
+       <ul>
+            <li>商品</li>
+            <li>数量</li>
+            <li>单价</li>
+            <li>操作</li>
+        </ul>
+    </div>
+    
+</body>
+
+</html>
+<SCript src="ajax.js"></SCript>
+<script>
+    var oBox = document.getElementById('box')
+    var oMengban = document.getElementById('mengban')
+    var oDelect = document.getElementById('delect')
+    var oConfirm = document.getElementById('confirm')
+    var oCancel = document.getElementById('cancel')
+    var str = ""
+    var p = new Promise(function (resolve, reject) {
+        ajax('get', "data.json", {}, function (data) {
+            var data = JSON.parse(data)
+            resolve(data)
+        })
+    })
+    p.then(function (data) {
+    
+        for (var i = 0; i < data.length; i++) {
+            str += `
+             <ul>
+            <li>${data[i].name}</li>
+            <li>${data[i].num}</li>
+            <li>${data[i].price}</li>
+            <li><a class="delete">删除</a></li>
+        </ul>
+            `
+        }
+        oBox.innerHTML+=str
+    })
+    oBox.onclick=function(e){
+        var e = e||event;
+        var target = e.target||e.srcElement
+        if(target.className == 'delete'&& target.tagName=='A'){
+            oMengban.style.display="block";
+            oDelect.style.display="block";
+            oConfirm.onclick=function(){
+                target.parentNode.parentNode.remove()
+                oMengban.style.display="none";
+                oDelect.style.display="none";
+            }
+            oCancel.onclick=function(){
+                oMengban.style.display="none";
+                oDelect.style.display="none";
+            }
+            oDelect.onmousedown=function(e){
+                var disX = e.offsetX;
+                var disY = e.offsetY;
+                document.onmousemove=function(e){
+                    l = e.clientX - disX;
+                    t = e.clientY - disY;
+                    var iW = document.documentElement.clientWidth-oDelect.offsetWidth;
+                    var iH = document.documentElement.clientHeight-oDelect.offsetHeight;
+                    l = l>iW?iW:(l<0?0:l)
+                    t = t>iH?iH:(t<0?0:t)
+                    oDelect.style.margin=0
+                    oDelect.style.left =l+"px";
+                    oDelect.style.top = t+"px";
+                    document.onmouseup=function(){
+                        document.onmousemove=null;
+                        document.onmouseup=null;
+                    }
+            
+                }
+            }
+
+        }
+    }
+
+</script>
